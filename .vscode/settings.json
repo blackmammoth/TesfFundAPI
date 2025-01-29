@@ -1,0 +1,8 @@
+{
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "notebook.defaultFormatter": "ms-dotnettools.csharp",
+    "[csharp]": {
+        "editor.defaultFormatter": "muhammad-sammy.csharp"
+    },
+    "csharp.format.enable": true
+}

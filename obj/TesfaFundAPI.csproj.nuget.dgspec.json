@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/mnt/Shared/repos/school/y4/TesfaFundAPI/TesfaFundAPI/TesfaFundAPI.csproj": {}
+    "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj": {}
   },
   "projects": {
-    "/mnt/Shared/repos/school/y4/TesfaFundAPI/TesfaFundAPI/TesfaFundAPI.csproj": {
+    "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/mnt/Shared/repos/school/y4/TesfaFundAPI/TesfaFundAPI/TesfaFundAPI.csproj",
+        "projectUniqueName": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
         "projectName": "TesfaFundAPI",
-        "projectPath": "/mnt/Shared/repos/school/y4/TesfaFundAPI/TesfaFundAPI/TesfaFundAPI.csproj",
+        "projectPath": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
         "packagesPath": "/home/ebawakf/.nuget/packages/",
-        "outputPath": "/mnt/Shared/repos/school/y4/TesfaFundAPI/TesfaFundAPI/obj/",
+        "outputPath": "/mnt/Shared/repos/school/y4/edp-project/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ebawakf/.nuget/NuGet/NuGet.Config"
@@ -37,6 +37,16 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
+          "dependencies": {
+            "MongoDB.Driver": {
+              "target": "Package",
+              "version": "[3.1.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[7.2.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
