@@ -1022,24 +1022,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\OMEN6\\.nuget\\packages\\": {}
+    "C:\\Users\\25196\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
+      "projectUniqueName": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
       "projectName": "TesfaFundAPI",
-      "projectPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
-      "packagesPath": "C:\\Users\\OMEN6\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\obj\\",
+      "projectPath": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
+      "packagesPath": "C:\\Users\\25196\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\25196\\TesfFundAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\OMEN6\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\25196\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1084,6 +1085,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.36, 6.0.36]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[6.0.36, 6.0.36]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.36, 6.0.36]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[6.0.36, 6.0.36]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1092,7 +1111,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101\\RuntimeIdentifierGraph.json"
       }
     }
   }
