@@ -1022,19 +1022,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\OMEN6\\.nuget\\packages\\": {}
+    "/Users/hemen/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
+      "projectUniqueName": "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj",
       "projectName": "TesfaFundAPI",
-      "projectPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
-      "packagesPath": "C:\\Users\\OMEN6\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\obj\\",
+      "projectPath": "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj",
+      "packagesPath": "/Users/hemen/.nuget/packages/",
+      "outputPath": "/Users/hemen/TesfFundAPI/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\OMEN6\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/hemen/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
@@ -1084,6 +1084,20 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.36, 6.0.36]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.osx-arm64",
+            "version": "[6.0.36, 6.0.36]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.36, 6.0.36]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1092,7 +1106,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.102/RuntimeIdentifierGraph.json"
       }
     }
   }
