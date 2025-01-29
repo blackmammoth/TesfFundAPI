@@ -28,11 +28,9 @@ This API provides the backend functionality for a crowdfunding platform. It allo
 
 - With Docker
   1. Build the Docker image: `docker build -t tesfafund-api .`
-  2. Run the Docker container: `docker run -p 8080:8080 tesfafund-api`
+  2. Run the Docker container: `docker run -p 5000:5000 tesfafund-api`
 
 ## API Endpoints
-
-The API endpoints are documented using Swagger. Once the API is running, you can access the Swagger UI at `http://localhost:[port]/swagger` (replace `[port]` with the port your API is running on, e.g., 8080 or the port specified in `launchSettings.json`).
 
 ### Recipients
 

@@ -8,7 +8,6 @@ namespace TesfaFundApp.Controllers;
 [Route("api/[controller]")]
 public class RecipientController : ControllerBase
 {
-
     private readonly IRecipientService _recipientService;
 
     public RecipientController(IRecipientService recipientService)
@@ -138,7 +137,7 @@ public class RecipientController : ControllerBase
     public async Task<IActionResult> GetAllRecipientsAsync([FromQuery] RecipientFilterParams filterParams)
     {
         var recipients = await _recipientService.GetAllRecipientsAsync(filterParams);
-        if (recipients == null || !recipients.Any())
+        if (recipients == null)
         {
             return NoContent();
         }

@@ -1022,25 +1022,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\25196\\.nuget\\packages\\": {}
+    "/home/ebawakf/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
+      "projectUniqueName": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
       "projectName": "TesfaFundAPI",
-      "projectPath": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
-      "packagesPath": "C:\\Users\\25196\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\25196\\TesfFundAPI\\obj\\",
+      "projectPath": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
+      "packagesPath": "/home/ebawakf/.nuget/packages/",
+      "outputPath": "/mnt/Shared/repos/school/y4/edp-project/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\25196\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/ebawakf/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1053,13 +1052,7 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.100"
+      }
     },
     "frameworks": {
       "net6.0": {
@@ -1085,24 +1078,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1111,7 +1086,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/opt/sdks/dotnet/v6.0/sdk/6.0.428/RuntimeIdentifierGraph.json"
       }
     }
   }
