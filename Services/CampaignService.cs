@@ -31,9 +31,11 @@ public class CampaignService : ICampaignService
 
     public async Task<Campaign?> GetCampaignByIdAsync(string id)
     {
-        // Return null if the campaign is not found, instead of throwing an exception
-        return null; // Replace with actual implementation
+    var filter = Builders<Campaign>.Filter.Eq(c => c.Id, id);
+    var campaign = await _campaignCollection.Find(filter).FirstOrDefaultAsync();
+    return campaign;
     }
+
 
     public async Task<IEnumerable<Campaign>> GetAllCampaignsAsync(CampaignFilterParams filters)
     {
