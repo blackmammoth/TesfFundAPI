@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj": {}
+    "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj": {}
   },
   "projects": {
-    "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj": {
+    "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
+        "projectUniqueName": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
         "projectName": "TesfaFundAPI",
-        "projectPath": "/mnt/Shared/repos/school/y4/edp-project/TesfaFundAPI.csproj",
-        "packagesPath": "/home/ebawakf/.nuget/packages/",
-        "outputPath": "/mnt/Shared/repos/school/y4/edp-project/obj/",
+        "projectPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\TesfaFundAPI.csproj",
+        "packagesPath": "C:\\Users\\OMEN6\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\OMEN6\\Desktop\\Projects\\.NET\\TesfaFundAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/ebawakf/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\OMEN6\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net9.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net9.0": {
+            "targetAlias": "net9.0",
             "projectReferences": {}
           }
         },
@@ -32,19 +32,21 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "dependencies": {
-            "MongoDB.Driver": {
+            "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[3.1.0, )"
-            },
-            "Swashbuckle.AspNetCore": {
-              "target": "Package",
-              "version": "[7.2.0, )"
+              "version": "[9.0.1, )"
             }
           },
           "imports": [
@@ -66,7 +68,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/opt/sdks/dotnet/v6.0/sdk/6.0.428/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,1 +1,0 @@
-TODO (bitbender-8): Finish dockerfile.
