@@ -46,7 +46,7 @@ The API endpoints are documented using Swagger. Once the API is running, you can
 
 Campaigns can be created, updated, or deleted.
 
-- [-] (blackmammoth) - `POST /api/campaigns`: Create a new campaign.
+- [ ] (blackmammoth) - `POST /api/campaigns`: Create a new campaign.
 - [ ] (blackmammoth) - `PUT /api/campaigns/{id}`: Update a campaign.
 - [ ] (bitbender-8) - `DELETE /api/campaigns/{id}`: Delete a campaign.
 - [ ] (bisrat) - `GET /api/campaigns/{id}`: Get a campaign by ID.
