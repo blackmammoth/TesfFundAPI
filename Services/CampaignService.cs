@@ -24,7 +24,9 @@ public class CampaignService : ICampaignService
     public async Task<Campaign> CreateCampaignAsync(Campaign campaign, string userId)
     {
         // Handle the case without throwing exceptions, return null or appropriate result if needed
-        return null; // Replace with actual implementation
+        campaign.UserId = userId;
+        await _campaignCollection.InsertOneAsync(campaign);
+        return campaign;
     }
 
     public async Task<Campaign?> GetCampaignByIdAsync(string id)
@@ -63,8 +65,14 @@ public class CampaignService : ICampaignService
 
     public async Task<bool> UpdateCampaignAsync(string id, Campaign campaign)
     {
-        // Return false if the update fails, without throwing an exception
-        return false; // Replace with actual implementation
+        var filter = Builders<Campaign>.Filter.Eq(c => c.Id, id);
+        var update = Builders<Campaign>.Update
+            .Set(c => c.Title, campaign.Title)
+            .Set(c => c.Description, campaign.Description)
+            .Set(c => c.FundraisingGoal, campaign.FundraisingGoal);
+
+        var result = await _campaignCollection.UpdateOneAsync(filter, update);
+        return result.ModifiedCount > 0;
     }
 
     public async Task<bool> DeleteCampaignAsync(string id)
