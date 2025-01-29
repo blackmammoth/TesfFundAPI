@@ -4,16 +4,12 @@ This project implements a RESTful API for a crowdfunding platform using .NET 6, 
 
 ## Features
 
-- **CRUD Operations:**  Create, Read, Update, and Delete functionality for Recipients, Campaigns, and Donations.
-- **Recipient Management:**  Recipient registration, login, logout.
-- **Campaign Management:**  Campaign creation, retrieval (with search and filtering), updates, deletion, and tracking donation progress.
-- **Donation Management:**  Making donations, retrieving donation details.
-- **Input Validation:**  Data validation using Data Annotations to ensure data integrity.
-- **Error Handling:**  Global exception handling with appropriate HTTP status codes.
-- **Search and Filtering:**  Search campaigns by title, category, etc.
-- **Pagination:**  Pagination for large datasets (e.g., listing campaigns).
-- **Dockerization:**  Easy deployment and consistent environment using Docker.
-- **API Documentation:**  Interactive API documentation using Swagger.
+This API provides the backend functionality for a crowdfunding platform. It allows users (recipients) to create and manage campaigns, and donors to contribute to these campaigns. The API utilizes MongoDB for data persistence and incorporates best practices such as dependency injection, clear separation of concerns, and robust error handling. Key features include:
+
+- **Recipient Management:** Recipient registration, login, and logout.
+- **Campaign Management:** Campaign creation, retrieval (with optional search and filtering), updates, deletion, and tracking of donation progress. Campaign creation, updates, and deletion are restricted to the campaign's recipient.
+- **Donation Management:** Making donations; retrieving donation details. Donations are immutable (cannot be modified or deleted once created).
+- **API Documentation:** Interactive API documentation using Swagger.
 
 ## Technologies Used
 
@@ -22,47 +18,50 @@ This project implements a RESTful API for a crowdfunding platform using .NET 6, 
 - Swashbuckle (for Swagger)
 - Docker
 
-### Running the API
+## Running the API
 
-Option 1: Without Docker
+- Without Docker
 
-1. Restore NuGet packages: `dotnet restore`
-2. Build the project: `dotnet build`
-3. Run the API: `dotnet run`
+  1. Restore NuGet packages: `dotnet restore`
+  2. Build the project: `dotnet build`
+  3. Run the API: `dotnet run`
 
-Option 2: With Docker
-
-1. Build the Docker image: `docker build -t crowdfunding-api .`
-2. Run the Docker container: `docker run -p 8080:8080 crowdfunding-api`
+- With Docker
+  1. Build the Docker image: `docker build -t tesfafund-api .`
+  2. Run the Docker container: `docker run -p 8080:8080 tesfafund-api`
 
 ## API Endpoints
 
+The API endpoints are documented using Swagger. Once the API is running, you can access the Swagger UI at `http://localhost:[port]/swagger` (replace `[port]` with the port your API is running on, e.g., 8080 or the port specified in `launchSettings.json`).
+
 ### Recipients
 
-- `POST /api/recipients`: Create a new recipient.
-- `GET /api/recipients/{id}`: Get a recipient by ID.
-- `PUT /api/recipients/{id}`: Update a recipient.
-- `DELETE /api/recipients/{id}`: Delete a recipient.
-- `POST /api/recipients/login`: Recipient login.
-- `POST /api/recipients/logout`: Recipient logout.
+- [ ] (hemen) - `POST /api/recipients`: Create a new recipient.
+- [ ] (hemen) - `GET /api/recipients/{id}`: Get a recipient by ID.
+- [ ] (bisrat) - `PUT /api/recipients/{id}`: Update a recipient.
+- [ ] (bisrat) - `DELETE /api/recipients/{id}`: Delete a recipient.
+- [ ] (bitbender-8) - `GET - /api/recipients`: Get all recipients (with optional search and filter params).
 
 ### Campaigns
 
-- `POST /api/campaigns`: Create a new campaign.
-- `GET /api/campaigns`: Get all campaigns (with optional search and filtering).
-- `GET /api/campaigns/{id}`: Get a campaign by ID.
-- `PUT /api/campaigns/{id}`: Update a campaign.
-- `DELETE /api/campaigns/{id}`: Delete a campaign.
-- `GET /api/campaigns/{id}/progress`: Get donation progress for a campaign.
+Campaigns can be created, updated, or deleted.
+
+- [-] (blackmammoth) - `POST /api/campaigns`: Create a new campaign.
+- [ ] (blackmammoth) - `PUT /api/campaigns/{id}`: Update a campaign.
+- [ ] (bitbender-8) - `DELETE /api/campaigns/{id}`: Delete a campaign.
+- [ ] (bisrat) - `GET /api/campaigns/{id}`: Get a campaign by ID.
+- [ ] (bitbender-8) - `GET /api/campaigns`: Get all campaigns (with optional search and filtering).
+- [ ] (bitbender-8) - `GET /api/campaigns/{id}/progress`: Get donation progress for a campaign.
 
 ### Donations
 
-- `POST /api/donations`: Make a donation.
-- `GET /api/donations/{id}`: Get donation details.
+Donations are immutable. Once created, they cannot be modified or deleted.
+
+- [ ] (blackmammoth) - `GET /api/donations/{id}`: Get donation details.
+- [ ] (blackmammoth) - `POST /api/donations`: Make a donation.
+- [ ] (bitbender-8) - `GET /api/donations`: Get donations (with search and filter params).
 
 ## Advanced Features
 
-- **Search and Filtering:** Implemented for Campaigns.
-- **Pagination:** Implemented for listing Campaigns.
+- **Search and Filtering:** Implemented for Campaigns, Users, Recipients.
 - **Dockerization:** The application can be easily containerized and deployed using Docker.
-- **Input Validation:** Data annotations are used for input validation.

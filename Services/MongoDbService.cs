@@ -1,6 +1,6 @@
 using MongoDB.Driver;
 
-namespace TesfaFundApp;
+namespace TesfaFundApp.Services;
 
 public class MongoDbService
 {
@@ -16,7 +16,7 @@ public class MongoDbService
         // Password setup for the MongoDb instance in docker compose
         var password = configuration.GetSection("DatabaseSettings:Password").Value;
 
-        string connectionString = "";
+        string connectionString;
         if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(password))
         {
 
