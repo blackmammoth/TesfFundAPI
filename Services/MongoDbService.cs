@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using TesfaFundApp.Models;
 
 namespace TesfaFundApp.Services;
 
@@ -31,6 +32,8 @@ public class MongoDbService
         {
             var client = new MongoClient(connectionString);
             _database = client.GetDatabase(databaseName);
+
+
         }
         catch (Exception ex)
         {
@@ -38,7 +41,13 @@ public class MongoDbService
         }
     }
 
-    public IMongoCollection<T>? GetCollection<T>(string collectionName) {
+    public IMongoCollection<T>? GetCollection<T>(string collectionName)
+    {
+        if (_database == null)
+        {
+            Console.WriteLine("Error: Database connection is not established.");
+            return null;
+        }
         return _database?.GetCollection<T>(collectionName);
     }
 }

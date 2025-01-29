@@ -34,32 +34,33 @@ This API provides the backend functionality for a crowdfunding platform. It allo
 
 ### Recipients
 
-- [ ] (hemen) - `POST /api/recipients`: Create a new recipient.
-- [ ] (hemen) - `GET /api/recipients/{id}`: Get a recipient by ID.
-- [ ] (bisrat) - `PUT /api/recipients/{id}`: Update a recipient.
-- [ ] (bisrat) - `DELETE /api/recipients/{id}`: Delete a recipient.
-- [ ] (bitbender-8) - `GET - /api/recipients`: Get all recipients (with optional search and filter params).
+- [x] (hemen) - `POST /api/recipients`: Create a new recipient.
+- [x] (hemen) - `GET /api/recipients/{id}`: Get a recipient by ID.
+- [x] (bisrat) - `PUT /api/recipients/{id}`: Update a recipient.
+- [x] (bisrat) - `DELETE /api/recipients/{id}`: Delete a recipient.
+- [x] (bitbender-8) - `GET - /api/recipients`: Get all recipients (with optional search and filter params).
 
 ### Campaigns
 
 Campaigns can be created, updated, or deleted.
 
-- [ ] (blackmammoth) - `POST /api/campaigns`: Create a new campaign.
-- [ ] (blackmammoth) - `PUT /api/campaigns/{id}`: Update a campaign.
-- [ ] (bitbender-8) - `DELETE /api/campaigns/{id}`: Delete a campaign.
-- [ ] (bisrat) - `GET /api/campaigns/{id}`: Get a campaign by ID.
-- [ ] (bitbender-8) - `GET /api/campaigns`: Get all campaigns (with optional search and filtering).
-- [ ] (bitbender-8) - `GET /api/campaigns/{id}/progress`: Get donation progress for a campaign.
+- [x] (blackmammoth) - `POST /api/campaigns`: Create a new campaign.
+- [x] (blackmammoth) - `PUT /api/campaigns/{id}`: Update a campaign.
+- [x] (bitbender-8) - `DELETE /api/campaigns/{id}`: Delete a campaign.
+- [x] (bisrat) - `GET /api/campaigns/{id}`: Get a campaign by ID.
+- [x] (bitbender-8) - `GET /api/campaigns`: Get all campaigns (with optional search and filtering).
+- [x] (bitbender-8) - `GET /api/campaigns/{id}/progress`: Get donation progress for a campaign.
 
 ### Donations
 
 Donations are immutable. Once created, they cannot be modified or deleted.
 
-- [ ] (blackmammoth) - `GET /api/donations/{id}`: Get donation details.
-- [ ] (blackmammoth) - `POST /api/donations`: Make a donation.
-- [ ] (bitbender-8) - `GET /api/donations`: Get donations (with search and filter params).
+- [x] (blackmammoth) - `GET /api/donations/{id}`: Get donation details.
+- [x] (blackmammoth) - `POST /api/donations`: Make a donation.
+- [x] (bitbender-8) - `GET /api/donations`: Get donations (with search and filter params).
 
 ## Advanced Features
 
 - **Search and Filtering:** Implemented for Campaigns, Users, Recipients.
 - **Dockerization:** The application can be easily containerized and deployed using Docker.
+- **Validation:** Validation using attributes on entity classes.

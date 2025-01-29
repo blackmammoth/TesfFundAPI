@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using TesfaFundApp.Services;
+using TesfaFundApp.Models;
+
 namespace TesfaFundApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class DonationController : ControllerBase
 {
-
     private readonly IDonationService _donationService;
     private readonly ICampaignService _campaignService;
 
@@ -20,26 +21,36 @@ public class DonationController : ControllerBase
     /// Get donation details by ID.
     /// </summary>
     /// <param name="id">The unique identifier of the donation.</param>
-    /// <returns>The details of the donation, or a 404 if not found.</returns>
+    /// <returns>The details of the donation, or a 404 Not Found result if not found.</returns>
     /// <response code="200">Donation details retrieved successfully.</response>
-    /// <response code="400">Invalid donation ID provided.</response>
-    /// <response code="404">Donation not found.</response>
+    /// <response code="400">Bad Request - Invalid donation ID provided.</response>
+    /// <response code="404">Not Found - Donation not found with the specified ID.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Donation), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetDonationByIdAsync(string id)
     {
-        // Validate the donation ID
-        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out _))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Invalid donation ID.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Donation ID",
+                Detail = "Invalid donation ID provided."
+            });
         }
 
-        // Fetch the donation using the donation service
         var donation = await _donationService.GetDonationByIdAsync(id);
 
-        // Return the donation if found, otherwise return NotFound
         if (donation == null)
         {
-            return NotFound();
+            return NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Donation Not Found",
+                Detail = "Donation not found with the specified ID."
+            });
         }
 
         return Ok(donation);
@@ -50,34 +61,31 @@ public class DonationController : ControllerBase
     /// </summary>
     /// <param name="donation">The donation details.</param>
     /// <returns>The created donation details or an error response.</returns>
-    /// <response code="200">Donation successfully created.</response>
-    /// <response code="400">Invalid donation data, such as missing or invalid fields.</response>
-    /// <response code="404">Campaign not found with the provided ID.</response>
-    /// <response code="500">Failed to process the donation.</response>
+    /// <response code="201">Donation successfully created. Returns the created donation object.</response>
+    /// <response code="400">Bad Request - Invalid donation data or donation processing failed. Check the response body for details.</response>
     [HttpPost]
+    [ProducesResponseType(typeof(Donation), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateDonationAsync([FromBody] Donation donation)
     {
-        // Validate the donation data
-        if (donation == null || donation.Amount <= 0 || string.IsNullOrEmpty(donation.CampaignId) || !Guid.TryParse(donation.CampaignId, out _))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Invalid donation data.");
+            return BadRequest(ModelState);
         }
 
-        // Check if the campaign exists
-        var campaign = await _campaignService.GetCampaignByIdAsync(donation.CampaignId);
-        if (campaign == null)
+        var (errorMessage, createdDonation) = await _donationService.MakeDonationAsync(donation);
+
+        if (errorMessage != null)
         {
-            return NotFound($"Campaign with ID {donation.CampaignId} not found.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Donation Processing Failed",
+                Detail = errorMessage
+            });
         }
 
-        // Process the donation
-        var createdDonation = await _donationService.MakeDonationAsync(donation);
-        if (createdDonation == null)
-        {
-            return StatusCode(500, "Failed to process donation.");
-        }
-
-        return Ok(createdDonation);
+        return CreatedAtAction(nameof(GetDonationByIdAsync), new { id = createdDonation!.Id }, createdDonation);
     }
 
     /// <summary>
@@ -86,18 +94,28 @@ public class DonationController : ControllerBase
     /// <param name="filters">The filter parameters for searching donations.</param>
     /// <returns>A list of donations that match the specified filter criteria.</returns>
     /// <response code="200">A list of donations successfully retrieved.</response>
-    /// <response code="400">Invalid filter parameters provided.</response>
+    /// <response code="400">Bad Request - Invalid filter parameters. Check the response body for details.</response>
     [HttpGet]
-    public async Task<IActionResult> GetDonationsAsync([FromQuery] DonationFilterParams filters)
+    [ProducesResponseType(typeof(IEnumerable<Donation>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetDonationsAsync([FromQuery] DonationFilterParams? filters)
     {
-        if (filters == null)
+        if (filters != null && !ModelState.IsValid)
         {
-            return BadRequest("Invalid filter parameters.");
+            return BadRequest(ModelState);
         }
 
-        // Retrieve filtered donations using the donation service
+        if (filters != null && filters.MinAmount > filters.MaxAmount)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Amount Range",
+                Detail = "Minimum amount cannot be greater than maximum amount."
+            });
+        }
+
         var donations = await _donationService.GetFilteredDonationsAsync(filters);
         return Ok(donations);
     }
-
 }

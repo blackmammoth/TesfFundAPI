@@ -1,82 +1,199 @@
 
 namespace TesfaFundApp.Services;
 
+using MongoDB.Bson;
+using MongoDB.Driver;
+using TesfaFundApp.Models;
+
+/// <summary>
+/// Defines the contract for managing recipients.
+/// </summary>
 public interface IRecipientService
 {
-    Task<Recipient> CreateRecipientAsync(Recipient recipient);
-    Task<Recipient?> GetRecipientByIdAsync(string id);
-    Task<bool> UpdateRecipientAsync(string id, Recipient recipient);
-    Task<bool> DeleteRecipientAsync(string id);
-    Task<IEnumerable<Recipient>> GetAllRecipientsAsync(RecipientFilterParams filterParams);
-}
+    /// <summary>
+    /// Creates a new recipient.
+    /// </summary>
+    /// <param name="recipient">The recipient data.</param>
+    /// <returns>A tuple containing an error message (or null on success) and the created recipient object (or null on error).</returns>
+    Task<(string? ErrorMessage, Recipient? CreatedRecipient)> CreateRecipientAsync(Recipient recipient);
 
+    /// <summary>
+    /// Retrieves a recipient by their ID.
+    /// </summary>
+    /// <param name="id">The ID of the recipient to retrieve.</param>
+    /// <returns>The recipient object, or null if not found.</returns>
+    Task<Recipient?> GetRecipientByIdAsync(string? id);
+
+    /// <summary>
+    /// Updates an existing recipient.
+    /// </summary>
+    /// <param name="id">The ID of the recipient to update.</param>
+    /// <param name="recipient">The updated recipient data.</param>
+    /// <returns>A tuple containing an error message (or null on success) and the updated recipient object (or null on error).</returns>
+    Task<(string? ErrorMessage, Recipient? UpdatedRecipient)> UpdateRecipientAsync(string id, Recipient recipient);
+
+    /// <summary>
+    /// Deletes a recipient by their ID.
+    /// </summary>
+    /// <param name="id">The ID of the recipient to delete.</param>
+    /// <returns>True if the recipient was deleted, false otherwise.</returns>
+    Task<string?> DeleteRecipientAsync(string id);
+
+    /// <summary>
+    /// Retrieves all recipients, optionally filtered by specified parameters.
+    /// </summary>
+    /// <param name="filterParams">The filter parameters (can be null for all recipients).</param>
+    /// <returns>A collection of recipients.</returns>
+    Task<IEnumerable<Recipient>> GetAllRecipientsAsync(RecipientFilterParams? filterParams);
+}
 
 public class RecipientService : IRecipientService
 {
-     private readonly List<Recipient> _recipients = new();
+    private readonly IMongoCollection<Recipient> _recipientCollection;
+    private readonly ICampaignService _campaignService;
 
-        public async Task<Recipient> CreateRecipientAsync(Recipient recipient)
+    public RecipientService(MongoDbService mongoDbService, ICampaignService campaignService)
+    {
+        _recipientCollection = mongoDbService.GetCollection<Recipient>("Recipients") ?? throw new InvalidOperationException("Failed to get Recipients collection.");
+        _campaignService = campaignService;
+    }
+
+    /// <inheritdoc/>
+    public async Task<(string? ErrorMessage, Recipient? CreatedRecipient)> CreateRecipientAsync(Recipient recipient)
+    {
+        try
         {
-            if (recipient == null)
+            recipient.Email = recipient!.Email!.ToLower();
+            await _recipientCollection.InsertOneAsync(recipient);
+            return (null, recipient);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating recipient: {ex}");
+            return ("An error occurred while creating the recipient.", null);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<string?> DeleteRecipientAsync(string id)
+    {
+        try
+        {
+            // Check if the recipient has any associated campaigns (using filters)
+            var campaignFilter = new CampaignFilterParams { RecipientId = id };
+            var campaigns = await _campaignService.GetAllCampaignsAsync(campaignFilter);
+
+            if (campaigns.Any())
             {
-                throw new ArgumentNullException(nameof(recipient));
+                Console.WriteLine($"Recipient with ID {id} has associated campaigns. Deletion failed.");
+                return ($"Recipient with ID {id} has associated campaigns. Deletion failed.");
             }
 
-            // Simulate an async operation
-            return await Task.Run(() =>
+            // If no campaigns are associated, proceed with deletion
+            var filter = Builders<Recipient>.Filter.Eq(r => r.Id, id);
+            var result = await _recipientCollection.DeleteOneAsync(filter);
+
+            if (result.DeletedCount > 0)
             {
-                recipient.Id = _recipients.Count + 1;
-                _recipients.Add(recipient);
-                return recipient;
-            });
+                return null;
+            }
+            else
+            {
+                return $"Recipient with ID {id} not found.";
+            }
         }
-
-        public async Task<List<Recipient>> GetAllRecipientsAsync()
+        catch (Exception ex)
         {
-            return await Task.FromResult(_recipients);
+            Console.WriteLine($"Error deleting recipient: {ex}");
+            return $"An error occurred while deleting the recipient: {ex.Message}";
         }
     }
-  }
 
-    public async Task<Recipient?> GetRecipientByIdAsync(string id)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Recipient>> GetAllRecipientsAsync(RecipientFilterParams? filterParams)
     {
-    	// Check if the id is valid
-    	if (string.IsNullOrWhiteSpace(id))
-    	{
-        	throw new ArgumentException("The provided ID is null, empty, or whitespace.", nameof(id));
-    	}
+        var filter = Builders<Recipient>.Filter.Empty;
 
-   	 // Return the recipient matching the string ID
-    	return await Task.Run(() => _recipients.FirstOrDefault(r => r.Id == id));
+        if (filterParams != null)
+        {
+            if (!string.IsNullOrEmpty(filterParams.FirstName))
+            {
+                filter = Builders<Recipient>.Filter.And(filter, Builders<Recipient>.Filter.Regex("FirstName", new BsonRegularExpression(filterParams.FirstName, "i")));
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.MiddleName))
+            {
+                filter = Builders<Recipient>.Filter.And(filter, Builders<Recipient>.Filter.Regex("MiddleName", new BsonRegularExpression(filterParams.MiddleName, "i")));
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.LastName))
+            {
+                filter = Builders<Recipient>.Filter.And(filter, Builders<Recipient>.Filter.Regex("LastName", new BsonRegularExpression(filterParams.LastName, "i")));
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.Email))
+            {
+                filter = Builders<Recipient>.Filter.And(filter, Builders<Recipient>.Filter.Regex("Email", new BsonRegularExpression(filterParams.Email, "i")));
+            }
+        }
+
+        try
+        {
+            return await _recipientCollection.Find(filter).ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting recipients: {ex}");
+            return new List<Recipient>();
+        }
     }
 
-
-    public async Task<bool> UpdateRecipientAsync(string id, Recipient recipient)
+    /// <inheritdoc/>
+    public async Task<Recipient?> GetRecipientByIdAsync(string? id)
     {
-        var filter = Builders<Recipient>.Filter.Eq(r => r.Id, id); 
-        var update = Builders<Recipient>.Update
-            .Set(r => r.Name, recipient.Name) 
-            .Set(r => r.Email, recipient.Email) 
-            .Set(r => r.Address, recipient.Address); 
+        if (string.IsNullOrEmpty(id))
+        {
+            return null;
+        }
 
-        var result = await _recipientCollection.UpdateOneAsync(filter, update); 
-        return result.ModifiedCount > 0; 
+        try
+        {
+            var filter = Builders<Recipient>.Filter.Eq(r => r.Id, id);
+            var recipient = await _recipientCollection.Find(filter).FirstOrDefaultAsync();
+            return recipient;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting recipient by ID: {ex}");
+            return null;
+        }
     }
 
-    public async Task<bool> DeleteRecipientAsync(string id)
+    /// <inheritdoc/>
+    public async Task<(string? ErrorMessage, Recipient? UpdatedRecipient)> UpdateRecipientAsync(string id, Recipient recipient)
     {
-        var filter = Builders<Recipient>.Filter.Eq(r => r.Id, id); 
-        var result = await _recipientCollection.DeleteOneAsync(filter); 
-        return result.DeletedCount > 0; 
-    }
+        try
+        {
+            var filter = Builders<Recipient>.Filter.Eq(r => r.Id, id);
 
-    public Task<IEnumerable<Recipient>> GetAllRecipientsAsync(RecipientFilterParams filterParams)
-    {
-        throw new NotImplementedException();
-    }
+            recipient.Id = id;
 
-    private string GetDebuggerDisplay()
-    {
-        return ToString();
+            var result = await _recipientCollection.ReplaceOneAsync(filter, recipient);
+
+            if (result.ModifiedCount > 0)
+            {
+                var updatedRecipient = await _recipientCollection.Find(filter).FirstOrDefaultAsync();
+                return (null, updatedRecipient);
+            }
+            else
+            {
+                return ("Recipient not found or not modified.", null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating recipient: {ex}");
+            return ("An error occurred while updating the recipient.", null);
+        }
     }
 }
