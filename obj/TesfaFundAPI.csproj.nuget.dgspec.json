@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj": {}
+    "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj": {}
   },
   "projects": {
-    "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj": {
+    "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj",
+        "projectUniqueName": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
         "projectName": "TesfaFundAPI",
-        "projectPath": "/Users/hemen/TesfFundAPI/TesfaFundAPI.csproj",
-        "packagesPath": "/Users/hemen/.nuget/packages/",
-        "outputPath": "/Users/hemen/TesfFundAPI/obj/",
+        "projectPath": "C:\\Users\\25196\\TesfFundAPI\\TesfaFundAPI.csproj",
+        "packagesPath": "C:\\Users\\25196\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\25196\\TesfFundAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/hemen/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\25196\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -70,11 +71,15 @@
               "version": "[6.0.36, 6.0.36]"
             },
             {
-              "name": "Microsoft.NETCore.App.Host.osx-arm64",
+              "name": "Microsoft.NETCore.App.Host.win-x64",
               "version": "[6.0.36, 6.0.36]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.36, 6.0.36]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
               "version": "[6.0.36, 6.0.36]"
             }
           ],
@@ -86,7 +91,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.102/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }
