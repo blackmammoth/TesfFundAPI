@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using TesfaFundApp.Services;
+using TesfaFundApp.Models;
 
 namespace TesfaFundApp.Controllers;
 
@@ -16,57 +16,61 @@ public class CampaignsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new campaign and validates the UserId.
+    /// Creates a new campaign.
     /// </summary>
-    /// <param name="campaign">The campaign object.</param>
-    /// <returns>Returns the created campaign.</returns>
-    /// <response code="201">Successfully created the campaign.</response>
-    /// <response code="400">Invalid campaign data or UserId mismatch.</response>
-    /// <response code="500">Failed to create campaign.</response>
+    /// <param name="campaign">The campaign data from the incoming request.</param>
+    /// <returns>The created campaign, or a BadRequest result with error details.</returns> // Improved return description
+    /// <response code="201">Successfully created the campaign. Returns the created campaign object.</response> // Clarified response
+    /// <response code="400">Bad Request - Invalid campaign data. Check the response body for error details.</response> // More specific
+    /// <response code="500">Internal Server Error - A server error occurred while creating the campaign.</response>
     [HttpPost("create")]
-    [ProducesResponseType(typeof(Campaign), 201)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(500)]
+    [ProducesResponseType(typeof(Campaign), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)] // Use ProblemDetails
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)] // Use ProblemDetails
     public async Task<IActionResult> CreateCampaignAsync([FromBody] Campaign campaign)
     {
-        // Validate that the UserId is provided and matches the expected format
-        if (string.IsNullOrEmpty(campaign.UserId))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("UserId is required.");
+            return BadRequest(ModelState);
         }
 
-        // Optionally, ensure the UserId is in a valid GUID format
-        if (!Guid.TryParse(campaign.UserId, out var parsedUserId))
+        var (errorMessage, createdCampaign) = await _campaignService.CreateCampaignAsync(campaign);
+
+        if (errorMessage != null)
         {
-            return BadRequest("Invalid UserId format.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Campaign Data",
+                Detail = errorMessage // Specific error message from the service
+            });
         }
 
-        // Proceed to create the campaign
-        var createdCampaign = await _campaignService.CreateCampaignAsync(campaign, campaign.UserId);
-
-        if (createdCampaign == null)
-        {
-            return StatusCode(500, "Failed to create campaign.");
-        }
-
-        return CreatedAtAction(nameof(GetCampaignByIdAsync), new { id = createdCampaign.Id }, createdCampaign);
+        return CreatedAtAction(nameof(GetCampaignByIdAsync), new { id = createdCampaign!.Id }, createdCampaign);
     }
 
     /// <summary>
-    /// Gets a campaign by its unique ID.
+    /// Gets a campaign by ID.
     /// </summary>
     /// <param name="id">The ID of the campaign.</param>
-    /// <returns>Returns the requested campaign or a 404 if not found.</returns>
+    /// <returns>The campaign, or a 404 Not Found result if not found.</returns>
     /// <response code="200">Returns the requested campaign.</response>
-    /// <response code="404">Campaign not found with the specified ID.</response>
+    /// <response code="400">Bad Request - The provided ID is not a valid UUID.</response>
+    /// <response code="404">Not Found - Campaign not found with the specified ID.</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(Campaign), 200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(Campaign), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCampaignByIdAsync(string id)
     {
-        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out _))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Campaign ID is missing or invalid");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Campaign ID",
+                Detail = $"'{id}' is not a valid UUID."
+            });
         }
 
         var campaign = await _campaignService.GetCampaignByIdAsync(id);
@@ -80,54 +84,113 @@ public class CampaignsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all campaigns with optional filter parameters.
+    /// Gets all campaigns (with optional filtering).
     /// </summary>
-    /// <param name="filterParams">The filter parameters to apply to the campaign search. 
-    /// The filter can include criteria like the campaign title, user ID, and fundraising goal range.</param>
-    /// <returns>A list of campaigns that match the filter criteria, or all campaigns if no filters are provided.</returns>
-    /// <response code="200">Returns a list of campaigns that match the filter parameters.</response>
-    /// <response code="400">If the filter parameters are invalid (e.g., MinFundraisingGoal > MaxFundraisingGoal).</response>
+    /// <param name="filterParams">Filter parameters (title, recipientId, fundraising goal range).</param>
+    /// <returns>A list of campaigns.</returns>
+    /// <response code="200">Returns a list of campaigns.</response>
+    /// <response code="400">Bad Request - Invalid filter parameters. Check the response body for details.</response>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<Campaign>), 200)]
-    [ProducesResponseType(400)]
-    public async Task<IActionResult> GetAllCampaignsAsync([FromQuery] CampaignFilterParams filterParams)
+    [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAllCampaignsAsync([FromQuery] CampaignFilterParams? filterParams)
     {
-        if (filterParams != null && filterParams.MinFundraisingGoal.HasValue && filterParams.MaxFundraisingGoal.HasValue && filterParams.MinFundraisingGoal > filterParams.MaxFundraisingGoal)
+        if (filterParams != null && !ModelState.IsValid)
         {
-            return BadRequest("Min fundraising goal cannot be greater than max fundraising goal.");
+            return BadRequest(ModelState);
         }
 
-        // Call the service method to retrieve the campaigns based on the filter parameters
-        var campaigns = await _campaignService.GetAllCampaignsAsync(filterParams);
+        if (filterParams != null && filterParams.MinFundraisingGoal > filterParams.MaxFundraisingGoal)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Fundraising Goal Range",
+                Detail = "Minimum fundraising goal cannot be greater than maximum fundraising goal."
+            });
+        }
 
-        // Return the list of campaigns with a 200 OK response
+        var campaigns = await _campaignService.GetAllCampaignsAsync(filterParams);
         return Ok(campaigns);
     }
 
     /// <summary>
-    /// Updates the details of an existing campaign.
+    /// Updates a campaign.
     /// </summary>
     /// <param name="id">The ID of the campaign to update.</param>
     /// <param name="updatedCampaign">The updated campaign data.</param>
-    /// <returns>Returns a 204 No Content response if the update is successful, 
-    /// or a 400 Bad Request if the input data is invalid, or 404 Not Found if the campaign with the specified ID does not exist.</returns>
-    /// <response code="204">The campaign was successfully updated.</response>
-    /// <response code="400">The provided campaign or ID is invalid.</response>
-    /// <response code="404">The campaign with the specified ID was not found.</response>
+    /// <returns>No Content (204) if successful, or an appropriate error response.</returns>
+    /// <response code="204">No Content - Campaign successfully updated.</response>
+    /// <response code="400">Bad Request - Invalid campaign data. Check the response body for details.</response>
+    /// <response code="404">Not Found - Campaign not found with the specified ID.</response>
     [HttpPut("{id}")]
-    [ProducesResponseType(204)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateCampaignAsync(string id, [FromBody] Campaign updatedCampaign)
     {
-        if (updatedCampaign == null || string.IsNullOrEmpty(id))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Campaign or ID is invalid.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Campaign ID",
+                Detail = "Invalid campaign ID."
+            });
         }
 
-        var updateSuccessful = await _campaignService.UpdateCampaignAsync(id, updatedCampaign);
+        updatedCampaign.Id = id;
 
-        if (!updateSuccessful)
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var (errorMessage, _) = await _campaignService.UpdateCampaignAsync(id, updatedCampaign);
+
+        if (errorMessage != null)
+        {
+            if (errorMessage == "Campaign not found or not modified.")
+            {
+                return NotFound();
+            }
+
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Campaign Update Failed",
+                Detail = errorMessage
+            });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes a campaign.
+    /// </summary>
+    /// <param name="id">The ID of the campaign to delete.</param>
+    /// <returns>No Content (204) if successful, or an appropriate error response.</returns>
+    /// <response code="204">No Content - Campaign successfully deleted.</response>
+    /// <response code="400">Bad Request - Invalid campaign ID.</response>
+    /// <response code="404">Not Found - Campaign not found with the specified ID.</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCampaignAsync(string id)
+    {
+        if (!Guid.TryParse(id, out _))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Campaign ID",
+                Detail = "Invalid campaign ID."
+            });
+        }
+
+        if (!await _campaignService.DeleteCampaignAsync(id))
         {
             return NotFound();
         }
@@ -136,55 +199,27 @@ public class CampaignsController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a campaign by its ID.
+    /// Gets donation progress for a campaign.
     /// </summary>
-    /// <param name="id">The ID of the campaign to delete.</param>
-    /// <returns>Returns a 204 No Content response if the deletion is successful, 
-    /// or a 400 Bad Request if the ID is invalid, or 404 Not Found if the campaign with the specified ID does not exist.</returns>
-    /// <response code="204">The campaign was successfully deleted.</response>
-    /// <response code="400">The provided campaign ID is invalid.</response>
-    /// <response code="404">The campaign with the specified ID was not found.</response>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(204)] // No Content
-    [ProducesResponseType(400)] // Bad Request
-    [ProducesResponseType(404)] // Not Found
-    public async Task<IActionResult> DeleteCampaignAsync(string id)
-    {
-        // Validate the campaign ID, ensure it's not null or empty and is a valid GUID
-        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out _))
-        {
-            return BadRequest("Invalid campaign ID."); // Return BadRequest if ID is invalid
-        }
-
-        // Call the service to delete the campaign and check if the operation was successful
-        var deleteSuccessful = await _campaignService.DeleteCampaignAsync(id);
-
-        if (!deleteSuccessful)
-        {
-            return NotFound(); // Return NotFound if the campaign with the provided ID does not exist
-        }
-
-        // Return a 204 No Content response if the deletion is successful
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Retrieves the donation progress for a specific campaign.
-    /// </summary>
-    /// <param name="id">The ID of the campaign to fetch donation progress for.</param>
-    /// <returns>Returns the donation progress if found, or appropriate error responses for invalid or non-existing campaigns.</returns>
-    /// <response code="200">Returns the donation progress for the campaign.</response>
-    /// <response code="400">The provided campaign ID is invalid.</response>
-    /// <response code="404">The campaign with the specified ID was not found.</response>
+    /// <param name="id">The ID of the campaign.</param>
+    /// <returns>The donation progress, or a 404 Not Found result if not found.</returns>
+    /// <response code="200">Returns the donation progress.</response>
+    /// <response code="400">Bad Request - Invalid campaign ID.</response>
+    /// <response code="404">Not Found - Campaign not found with the specified ID.</response>
     [HttpGet("{id}/progress")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(DonationProgress), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCampaignDonationProgressAsync(string id)
     {
-        if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out _))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Invalid campaign ID.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Campaign ID",
+                Detail = "Invalid campaign ID."
+            });
         }
 
         var progress = await _campaignService.GetCampaignDonationProgressAsync(id);

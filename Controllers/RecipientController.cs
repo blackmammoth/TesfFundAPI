@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using TesfaFundApp.Services;
+using TesfaFundApp.Models;
 
 namespace TesfaFundApp.Controllers;
 
@@ -8,7 +9,6 @@ namespace TesfaFundApp.Controllers;
 [Route("api/[controller]")]
 public class RecipientController : ControllerBase
 {
-
     private readonly IRecipientService _recipientService;
 
     public RecipientController(IRecipientService recipientService)
@@ -25,23 +25,29 @@ public class RecipientController : ControllerBase
     /// <response code="400">Invalid recipient data.</response>
     /// <response code="500">Failed to create recipient.</response>
     [HttpPost]
-    [ProducesResponseType(201)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(500)]
+    [ProducesResponseType(typeof(Recipient), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateRecipientAsync([FromBody] Recipient recipient)
     {
-        if (recipient == null)
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Recipient data is invalid.");
+            return BadRequest(ModelState);
         }
 
-        var createdRecipient = await _recipientService.CreateRecipientAsync(recipient);
-        if (createdRecipient == null)
+        var (errorMessage, createdRecipient) = await _recipientService.CreateRecipientAsync(recipient);
+
+        if (errorMessage != null)
         {
-            return StatusCode(500, "Failed to create recipient.");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Recipient Creation Failed",
+                Detail = errorMessage
+            });
         }
 
-        return CreatedAtAction(nameof(GetRecipientByIdAsync), new { id = createdRecipient.Id }, createdRecipient);
+        return CreatedAtAction(nameof(GetRecipientByIdAsync), new { id = createdRecipient!.Id }, createdRecipient);
     }
 
     /// <summary>
@@ -50,21 +56,29 @@ public class RecipientController : ControllerBase
     /// <param name="id">The ID of the recipient to fetch.</param>
     /// <returns>Returns the recipient details.</returns>
     /// <response code="200">Returns the recipient details.</response>
+    /// <response code="400">Bad Request - Invalid recipient ID provided.</response>
     /// <response code="404">Recipient not found.</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(Recipient), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRecipientByIdAsync(string id)
     {
-        if (string.IsNullOrEmpty(id))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Recipient ID is required.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Recipient ID",
+                Detail = $"'{id}' is not a valid Recipient ID."
+            });
         }
 
         var recipient = await _recipientService.GetRecipientByIdAsync(id);
+
         if (recipient == null)
         {
-            return NotFound($"Recipient with ID {id} not found.");
+            return NotFound();
         }
 
         return Ok(recipient);
@@ -77,26 +91,48 @@ public class RecipientController : ControllerBase
     /// <param name="recipient">The updated recipient object.</param>
     /// <returns>Returns a 204 No Content response if the update is successful.</returns>
     /// <response code="204">Recipient updated successfully.</response>
-    /// <response code="400">Invalid recipient data.</response>
+    /// <response code="400">Bad Request - Invalid recipient data or ID.</response>
     /// <response code="404">Recipient not found.</response>
+    /// <response code="500">Internal Server Error - An unexpected error occurred.</response> 
     [HttpPut("{id}")]
-    [ProducesResponseType(204)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateRecipientAsync(string id, [FromBody] Recipient recipient)
     {
-        if (string.IsNullOrEmpty(id) || recipient == null)
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Invalid recipient data.");
+            return BadRequest(ModelState);
         }
 
-        var updated = await _recipientService.UpdateRecipientAsync(id, recipient);
-        if (updated)
+        if (!Guid.TryParse(id, out _))
         {
-            return NoContent();
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Recipient ID",
+                Detail = $"'{id}' is not a valid Recipient ID."
+            });
         }
 
-        return NotFound($"Recipient with ID {id} not found.");
+        var (errorMessage, _) = await _recipientService.UpdateRecipientAsync(id, recipient);
+
+        if (errorMessage == "Recipient not found or not updated.")
+        {
+            return NotFound();
+        }
+        else if (errorMessage != null)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Recipient Update Failed",
+                Detail = errorMessage
+            });
+        }
+
+        return NoContent();
     }
 
     /// <summary>
@@ -105,24 +141,52 @@ public class RecipientController : ControllerBase
     /// <param name="id">The ID of the recipient to delete.</param>
     /// <returns>Returns a 204 No Content response if the delete is successful.</returns>
     /// <response code="204">Recipient deleted successfully.</response>
+    /// <response code="400">Bad Request - Invalid recipient ID or recipient has associated campaigns.</response>
     /// <response code="404">Recipient not found.</response>
+    /// <response code="500">Internal Server Error - An unexpected error occurred.</response>
     [HttpDelete("{id}")]
-    [ProducesResponseType(204)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteRecipientAsync(string id)
     {
-        if (string.IsNullOrEmpty(id))
+        if (!Guid.TryParse(id, out _))
         {
-            return BadRequest("Recipient ID is required.");
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Recipient ID",
+                Detail = $"'{id}' is not a valid Recipient ID."
+            });
         }
 
-        var result = await _recipientService.DeleteRecipientAsync(id);
-        if (result)
+        var errorMessage = await _recipientService.DeleteRecipientAsync(id);
+
+        if (errorMessage == "Recipient not found or not updated.")
         {
-            return NoContent();
+            return NotFound();
+        }
+        else if (errorMessage != null && errorMessage.Contains("has associated campaigns"))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Recipient Deletion Failed",
+                Detail = errorMessage
+            });
+        }
+        else if (errorMessage != null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Recipient Deletion Failed",
+                Detail = errorMessage
+            });
         }
 
-        return NotFound($"Recipient with ID {id} not found.");
+        return NoContent();
     }
 
     /// <summary>
@@ -131,17 +195,21 @@ public class RecipientController : ControllerBase
     /// <param name="filterParams">Optional filter parameters for searching recipients.</param>
     /// <returns>Returns a list of recipients based on the filter criteria.</returns>
     /// <response code="200">Returns a list of recipients.</response>
-    /// <response code="204">No recipients found.</response>
+    /// <response code="400">Bad Request - Invalid filter parameters.</response>
+    /// <response code="500">Internal Server Error - An unexpected error occurred.</response>
     [HttpGet]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(204)]
-    public async Task<IActionResult> GetAllRecipientsAsync([FromQuery] RecipientFilterParams filterParams)
+    [ProducesResponseType(typeof(IEnumerable<Recipient>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAllRecipientsAsync([FromQuery] RecipientFilterParams? filterParams)
     {
-        var recipients = await _recipientService.GetAllRecipientsAsync(filterParams);
-        if (recipients == null || !recipients.Any())
+        if (filterParams != null && !ModelState.IsValid)
         {
-            return NoContent();
+            return BadRequest(ModelState);
         }
-        return Ok(recipients);
+
+        var recipients = await _recipientService.GetAllRecipientsAsync(filterParams);
+
+        return Ok(recipients ?? new List<Recipient>());
     }
 }

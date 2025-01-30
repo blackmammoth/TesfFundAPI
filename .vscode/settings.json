@@ -4,5 +4,8 @@
     "[csharp]": {
         "editor.defaultFormatter": "muhammad-sammy.csharp"
     },
-    "csharp.format.enable": true
+    "csharp.format.enable": true,
+    "[xml]": {
+        "editor.defaultFormatter": "redhat.vscode-xml"
+    }
 }
