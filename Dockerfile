@@ -12,6 +12,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS runtime
 WORKDIR /app
 COPY --from=build /app/publish /app
 
-EXPOSE 5000
+EXPOSE 5208
 
 ENTRYPOINT ["dotnet", "TesfaFundAPI.dll"]

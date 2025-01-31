@@ -28,7 +28,10 @@ This API provides the backend functionality for a crowdfunding platform. It allo
 
 - With Docker
   1. Build the Docker image: `docker build -t tesfafund-api .`
-  2. Run the Docker container: `docker run -p 5000:5000 tesfafund-api`
+  2. Run the Docker container: `docker run -p 5208:5208 tesfafund-api`
+
+- With Docker compose: Handles both the DB and the api server.
+  1. Build and run the image: `docker-compose up`
 
 ## API Endpoints
 
@@ -63,4 +66,4 @@ Donations are immutable. Once created, they cannot be modified or deleted.
 
 - **Search and Filtering:** Implemented for Campaigns, Users, Recipients.
 - **Dockerization:** The application can be easily containerized and deployed using Docker.
-- **Validation:** Validation using attributes on entity classes.
+- **Validation:** Validation using attributes on entity classes, and path params.

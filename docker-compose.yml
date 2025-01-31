@@ -1,5 +1,5 @@
 services:
-  web:
+  tesfafund.api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,11 +10,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:5208
     depends_on:
-      - mongodb
+      - tesfafund.mongodb
     networks:
       - app-network
 
-  mongodb:
+  tesfafund.mongodb:
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -25,10 +25,6 @@ services:
       - mongodb-data:/data/db
     networks:
       - app-network
-    command: >-
-      mongod --quiet --logpath /dev/null  # Suppress MongoDB output
-    logging:
-      driver: "none"
 
 volumes:
   mongodb-data:
