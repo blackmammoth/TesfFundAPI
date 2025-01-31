@@ -25,7 +25,7 @@ public class DonationController : ControllerBase
     /// <response code="200">Donation details retrieved successfully.</response>
     /// <response code="400">Bad Request - Invalid donation ID provided.</response>
     /// <response code="404">Not Found - Donation not found with the specified ID.</response>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetDonationByIdAsync")]
     [ProducesResponseType(typeof(Donation), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -57,7 +57,7 @@ public class DonationController : ControllerBase
     }
 
     /// <summary>
-    /// Make a donation to a campaign.
+    /// Make a donation to a campaign. Donation timestamp is set by the server.
     /// </summary>
     /// <param name="donation">The donation details.</param>
     /// <returns>The created donation details or an error response.</returns>
@@ -85,7 +85,7 @@ public class DonationController : ControllerBase
             });
         }
 
-        return CreatedAtAction(nameof(GetDonationByIdAsync), new { id = createdDonation!.Id }, createdDonation);
+        return CreatedAtRoute(nameof(GetDonationByIdAsync), new { id = createdDonation!.Id }, createdDonation);
     }
 
     /// <summary>
@@ -112,6 +112,16 @@ public class DonationController : ControllerBase
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Invalid Amount Range",
                 Detail = "Minimum amount cannot be greater than maximum amount."
+            });
+        }
+
+        if (filters != null && filters.StartDate > filters.EndDate)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid Date Range",
+                Detail = "Start Date cannot be greater than End Date."
             });
         }
 

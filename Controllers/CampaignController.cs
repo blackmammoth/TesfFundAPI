@@ -19,14 +19,14 @@ public class CampaignsController : ControllerBase
     /// Creates a new campaign.
     /// </summary>
     /// <param name="campaign">The campaign data from the incoming request.</param>
-    /// <returns>The created campaign, or a BadRequest result with error details.</returns> // Improved return description
-    /// <response code="201">Successfully created the campaign. Returns the created campaign object.</response> // Clarified response
-    /// <response code="400">Bad Request - Invalid campaign data. Check the response body for error details.</response> // More specific
+    /// <returns>The created campaign, or a BadRequest result with error details.</returns>
+    /// <response code="201">Successfully created the campaign. Returns the created campaign object.</response>
+    /// <response code="400">Bad Request - Invalid campaign data. Check the response body for error details.</response>
     /// <response code="500">Internal Server Error - A server error occurred while creating the campaign.</response>
     [HttpPost("create")]
     [ProducesResponseType(typeof(Campaign), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)] // Use ProblemDetails
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)] // Use ProblemDetails
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateCampaignAsync([FromBody] Campaign campaign)
     {
         if (!ModelState.IsValid)
@@ -42,11 +42,11 @@ public class CampaignsController : ControllerBase
             {
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Invalid Campaign Data",
-                Detail = errorMessage // Specific error message from the service
+                Detail = errorMessage
             });
         }
 
-        return CreatedAtAction(nameof(GetCampaignByIdAsync), new { id = createdCampaign!.Id }, createdCampaign);
+        return CreatedAtRoute(nameof(GetCampaignByIdAsync), new { id = createdCampaign!.Id }, createdCampaign);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class CampaignsController : ControllerBase
     /// <response code="200">Returns the requested campaign.</response>
     /// <response code="400">Bad Request - The provided ID is not a valid UUID.</response>
     /// <response code="404">Not Found - Campaign not found with the specified ID.</response>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetCampaignByIdAsync")]
     [ProducesResponseType(typeof(Campaign), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -86,21 +86,21 @@ public class CampaignsController : ControllerBase
     /// <summary>
     /// Gets all campaigns (with optional filtering).
     /// </summary>
-    /// <param name="filterParams">Filter parameters (title, recipientId, fundraising goal range).</param>
+    /// <param name="filters">Filter parameters (title, recipientId, fundraising goal range).</param>
     /// <returns>A list of campaigns.</returns>
     /// <response code="200">Returns a list of campaigns.</response>
     /// <response code="400">Bad Request - Invalid filter parameters. Check the response body for details.</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<Campaign>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetAllCampaignsAsync([FromQuery] CampaignFilterParams? filterParams)
+    public async Task<IActionResult> GetAllCampaignsAsync([FromQuery] CampaignFilterParams? filters)
     {
-        if (filterParams != null && !ModelState.IsValid)
+        if (filters != null && !ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        if (filterParams != null && filterParams.MinFundraisingGoal > filterParams.MaxFundraisingGoal)
+        if (filters != null && filters.MinFundraisingGoal > filters.MaxFundraisingGoal)
         {
             return BadRequest(new ProblemDetails
             {
@@ -110,7 +110,7 @@ public class CampaignsController : ControllerBase
             });
         }
 
-        var campaigns = await _campaignService.GetAllCampaignsAsync(filterParams);
+        var campaigns = await _campaignService.GetAllCampaignsAsync(filters);
         return Ok(campaigns);
     }
 

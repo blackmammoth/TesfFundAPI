@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using TesfaFundApp.Models;
@@ -41,16 +42,14 @@ public interface IDonationService
 public class DonationService : IDonationService
 {
     private readonly IMongoCollection<Donation> _donationCollection;
-    private readonly ICampaignService _campaignService;
-    private readonly IRecipientService _recipientService;
+    private readonly Lazy<ICampaignService> _campaignService;
 
 
-    public DonationService(MongoDbService mongoDbService, ICampaignService campaignService, IRecipientService recipientService)
+    public DonationService(MongoDbService mongoDbService, Lazy<ICampaignService> campaignService)
     {
         _donationCollection = mongoDbService.GetCollection<Donation>("Donations")
                              ?? throw new InvalidOperationException("Failed to get Donations collection.");
         _campaignService = campaignService;
-        _recipientService = recipientService;
     }
 
     /// <inheritdoc/>
@@ -101,13 +100,15 @@ public class DonationService : IDonationService
 
         if (filters.StartDate.HasValue)
         {
-            filter &= filterBuilder.Gte(d => d.TimeStamp, filters.StartDate.Value);
+            var startDateUtc = filters.StartDate.Value.ToUniversalTime();
+            filter &= filterBuilder.Gte(d => d.TimeStamp, startDateUtc);
         }
 
         if (filters.EndDate.HasValue)
         {
-            // Add one day to EndDate to include donations made on that day
-            filter &= filterBuilder.Lte(d => d.TimeStamp, filters.EndDate.Value.AddDays(1));
+            // Add one day to EndDate to include donations made up to the end of that day
+            var endDateUtc = filters.EndDate.Value.AddDays(1).ToUniversalTime();
+            filter &= filterBuilder.Lte(d => d.TimeStamp, endDateUtc);
         }
 
         try
@@ -154,7 +155,7 @@ public class DonationService : IDonationService
     public async Task<(string? ErrorMessage, Donation? MadeDonation)> MakeDonationAsync(Donation donation)
     {
         // Make sure CampaignId exists
-        var campaign = await _campaignService.GetCampaignByIdAsync(donation.CampaignId);
+        var campaign = await _campaignService.Value.GetCampaignByIdAsync(donation.CampaignId);
         if (campaign == null)
         {
             return ($"Campaign with CampaignId: {donation.CampaignId} does not exist.", null);
@@ -162,6 +163,8 @@ public class DonationService : IDonationService
 
         try
         {
+            donation.Id = Guid.NewGuid().ToString();
+            donation.TimeStamp = DateTime.Now;
             await _donationCollection.InsertOneAsync(donation);
             return (null, donation);
         }

@@ -19,10 +19,14 @@ builder.Services.AddSwaggerGen(c =>
         $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
 });
 
+builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddSingleton<ICampaignService, CampaignService>();
 builder.Services.AddSingleton<IDonationService, DonationService>();
 builder.Services.AddSingleton<IRecipientService, RecipientService>();
-builder.Services.AddSingleton<MongoDbService>();
+
+builder.Services.AddSingleton(provider => new Lazy<ICampaignService>(provider.GetRequiredService<ICampaignService>));
+builder.Services.AddSingleton(provider => new Lazy<IRecipientService>(provider.GetRequiredService<IRecipientService>));
+builder.Services.AddSingleton(provider => new Lazy<IDonationService>(provider.GetRequiredService<IDonationService>));
 
 var app = builder.Build();
 

@@ -7,5 +7,8 @@
     "csharp.format.enable": true,
     "[xml]": {
         "editor.defaultFormatter": "redhat.vscode-xml"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     }
 }

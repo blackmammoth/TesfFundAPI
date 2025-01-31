@@ -4,11 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5208:5208"
+      - "7179:7179"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:5208
     depends_on:
       - mongodb
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:latest
@@ -17,3 +21,18 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: OmitUserOrPasswordToConnectWithoutAuth
     ports:
       - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - app-network
+    command: >-
+      mongod --quiet --logpath /dev/null  # Suppress MongoDB output
+    logging:
+      driver: "none"
+
+volumes:
+  mongodb-data:
+
+networks:
+  app-network:
+    driver: bridge

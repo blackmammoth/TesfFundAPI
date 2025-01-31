@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TesfaFundApp.Services;
 using TesfaFundApp.Models;
+using MongoDB.Bson;
 
 namespace TesfaFundApp.Controllers;
 
@@ -46,8 +47,11 @@ public class RecipientController : ControllerBase
                 Detail = errorMessage
             });
         }
+        // DEBUG
+        Console.WriteLine($"Created Recipient: {createdRecipient.ToJson()}");
+        Console.WriteLine($"Route Values: id = {createdRecipient.Id}");
 
-        return CreatedAtAction(nameof(GetRecipientByIdAsync), new { id = createdRecipient!.Id }, createdRecipient);
+        return CreatedAtRoute(nameof(GetRecipientByIdAsync), new { id = createdRecipient!.Id }, createdRecipient);
     }
 
     /// <summary>
@@ -58,7 +62,7 @@ public class RecipientController : ControllerBase
     /// <response code="200">Returns the recipient details.</response>
     /// <response code="400">Bad Request - Invalid recipient ID provided.</response>
     /// <response code="404">Recipient not found.</response>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetRecipientByIdAsync")]
     [ProducesResponseType(typeof(Recipient), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -192,7 +196,7 @@ public class RecipientController : ControllerBase
     /// <summary>
     /// Retrieves all recipients with optional search and filter parameters.
     /// </summary>
-    /// <param name="filterParams">Optional filter parameters for searching recipients.</param>
+    /// <param name="filters">Optional filter parameters for searching recipients.</param>
     /// <returns>Returns a list of recipients based on the filter criteria.</returns>
     /// <response code="200">Returns a list of recipients.</response>
     /// <response code="400">Bad Request - Invalid filter parameters.</response>
@@ -201,14 +205,14 @@ public class RecipientController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Recipient>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAllRecipientsAsync([FromQuery] RecipientFilterParams? filterParams)
+    public async Task<IActionResult> GetAllRecipientsAsync([FromQuery] RecipientFilterParams? filters)
     {
-        if (filterParams != null && !ModelState.IsValid)
+        if (filters != null && !ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var recipients = await _recipientService.GetAllRecipientsAsync(filterParams);
+        var recipients = await _recipientService.GetAllRecipientsAsync(filters);
 
         return Ok(recipients ?? new List<Recipient>());
     }
