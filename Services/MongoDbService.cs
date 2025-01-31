@@ -12,10 +12,10 @@ public class MongoDbService
         var host = configuration.GetSection("MongoDbSettings:Host").Value;
         var port = configuration.GetSection("MongoDbSettings:Port").Value;
         var databaseName = configuration.GetSection("MongoDbSettings:DatabaseName").Value;
-        var user = configuration.GetSection("DatabaseSettings:User").Value;
+        var user = configuration.GetSection("MongoDbSettings:User").Value;
 
         // Password setup for the MongoDb instance in docker compose
-        var password = configuration.GetSection("DatabaseSettings:Password").Value;
+        var password = configuration.GetSection("MongoDbSettings:Password").Value;
 
         string connectionString;
         if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(password))

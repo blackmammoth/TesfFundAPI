@@ -50,9 +50,9 @@ public interface IRecipientService
 public class RecipientService : IRecipientService
 {
     private readonly IMongoCollection<Recipient> _recipientCollection;
-    private readonly ICampaignService _campaignService;
+    private readonly Lazy<ICampaignService> _campaignService;
 
-    public RecipientService(MongoDbService mongoDbService, ICampaignService campaignService)
+    public RecipientService(MongoDbService mongoDbService, Lazy<ICampaignService> campaignService)
     {
         _recipientCollection = mongoDbService.GetCollection<Recipient>("Recipients") ?? throw new InvalidOperationException("Failed to get Recipients collection.");
         _campaignService = campaignService;
@@ -63,6 +63,7 @@ public class RecipientService : IRecipientService
     {
         try
         {
+            recipient.Id = Guid.NewGuid().ToString();
             recipient.Email = recipient!.Email!.ToLower();
             await _recipientCollection.InsertOneAsync(recipient);
             return (null, recipient);
@@ -81,12 +82,12 @@ public class RecipientService : IRecipientService
         {
             // Check if the recipient has any associated campaigns (using filters)
             var campaignFilter = new CampaignFilterParams { RecipientId = id };
-            var campaigns = await _campaignService.GetAllCampaignsAsync(campaignFilter);
+            var campaigns = await _campaignService.Value.GetAllCampaignsAsync(campaignFilter);
 
             if (campaigns.Any())
             {
-                Console.WriteLine($"Recipient with ID {id} has associated campaigns. Deletion failed.");
-                return ($"Recipient with ID {id} has associated campaigns. Deletion failed.");
+                Console.WriteLine($"Recipient with ID '{id}' has associated campaigns. Deletion failed.");
+                return $"Recipient with ID '{id}' has associated campaigns. Deletion failed.";
             }
 
             // If no campaigns are associated, proceed with deletion
@@ -99,7 +100,7 @@ public class RecipientService : IRecipientService
             }
             else
             {
-                return $"Recipient with ID {id} not found.";
+                return $"Recipient with ID '{id}' not found.";
             }
         }
         catch (Exception ex)

@@ -10,7 +10,7 @@ namespace TesfaFundApp.Models;
 public class Donation
 {
     /// <summary>
-    /// The unique identifier for the donation (MongoDB ObjectId).
+    /// The unique identifier for the donation (UUID).
     /// </summary>
     [BsonId]
     [BsonRepresentation(BsonType.String)]
@@ -26,6 +26,7 @@ public class Donation
     /// <summary>
     /// The timestamp of the donation. Defaults to the current UTC time.
     /// </summary>
+     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
@@ -92,7 +93,7 @@ public class DonationFilterParams
     public DateTime? StartDate { get; set; }
 
     /// <summary>
-    /// Filter donations ending at this date and time.
+    /// Filter donations ending before this date and time.
     /// </summary>
     public DateTime? EndDate { get; set; }
 }

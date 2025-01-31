@@ -10,7 +10,7 @@ namespace TesfaFundApp.Models;
 public class Campaign
 {
     /// <summary>
-    /// The unique identifier for the campaign (MongoDB ObjectId).
+    /// The unique identifier for the campaign (UUID).
     /// </summary>
     [BsonId]
     [BsonRepresentation(BsonType.String)]
@@ -57,7 +57,7 @@ public class CampaignFilterParams
     public string? Title { get; set; }
 
     /// <summary>
-    /// Filter campaigns by the ID of the user who created the campaign.
+    /// Filter campaigns by the ID of the recipient who created the campaign.
     /// </summary>
     [ValidGuid(ErrorMessage = "RecipientId must be a valid UUID.")]
     public string? RecipientId { get; set; }

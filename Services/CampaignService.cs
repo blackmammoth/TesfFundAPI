@@ -56,9 +56,9 @@ public interface ICampaignService
 public class CampaignService : ICampaignService
 {
     private readonly IMongoCollection<Campaign> _campaignCollection;
-    private readonly IRecipientService _recipientService;
-    private readonly IDonationService _donationService;
-    public CampaignService(MongoDbService mongoDbService, IRecipientService recipientService, IDonationService donationService)
+    private readonly Lazy<IRecipientService> _recipientService;
+    private readonly Lazy<IDonationService> _donationService;
+    public CampaignService(MongoDbService mongoDbService, Lazy<IRecipientService> recipientService, Lazy<IDonationService> donationService)
     {
         _campaignCollection = mongoDbService.GetCollection<Campaign>("Campaigns")
                                ?? throw new InvalidOperationException("Failed to get Campaigns collection.");
@@ -70,7 +70,7 @@ public class CampaignService : ICampaignService
     public async Task<(string? ErrorMessage, Campaign? CreatedCampaign)> CreateCampaignAsync(Campaign campaign)
     {
         // Check if the recipient exists *before* creating the campaign.
-        var recipient = await _recipientService.GetRecipientByIdAsync(campaign.RecipientId);
+        var recipient = await _recipientService.Value.GetRecipientByIdAsync(campaign.RecipientId);
         if (recipient == null)
         {
             return ("Recipient with provided RecipientId does not exist.", null);
@@ -78,6 +78,7 @@ public class CampaignService : ICampaignService
 
         try
         {
+            campaign.Id = Guid.NewGuid().ToString();
             await _campaignCollection.InsertOneAsync(campaign);
             return (null, campaign);
         }
@@ -171,7 +172,7 @@ public class CampaignService : ICampaignService
     {
         try
         {
-            int totalDonationAmount = await _donationService.GetTotalDonationsForCampaignAsync(campaignId);
+            int totalDonationAmount = await _donationService.Value.GetTotalDonationsForCampaignAsync(campaignId);
 
             var campaign = await GetCampaignByIdAsync(campaignId);
             if (campaign == null)
@@ -210,7 +211,7 @@ public class CampaignService : ICampaignService
         try
         {
             // Check if the related Recipient exists
-            var recipient = await _recipientService.GetRecipientByIdAsync(campaign.RecipientId);
+            var recipient = await _recipientService.Value.GetRecipientByIdAsync(campaign.RecipientId);
             if (recipient == null)
             {
                 return ("Recipient with provided RecipientId does not exist.", null);
